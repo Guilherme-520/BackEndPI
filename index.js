@@ -28,7 +28,7 @@ app.use("/controle/editorchefe", authMiddleware(["Editor Chefe"]), validarOrg )
 
 // Rotas protegidas por tipos de usuário
 const evento = require('./routes/evento/evento');
-app.use('/evento', authMiddleware(['']), evento );
+app.use('/evento', authMiddleware(['Admin']), evento );
 
 // Rotas protegidas por tipos de usuário
 const authEvento = require('./routes/evento/authEvento');
