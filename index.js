@@ -13,7 +13,7 @@ app.use('/auth', authRoutes);
 
 
 const instituicao = require('./routes/geral/instituicao')
-app.use('/cadastrar/instituicao', instituicao)
+app.use('/instituicao', instituicao)
 
 
 const home = require("./routes/novo/home")

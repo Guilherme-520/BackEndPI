@@ -113,7 +113,7 @@ router.post('/login', async (req, res) => {
 
     await Token.create({ token, idUserProfiles: user.id, expiresAt });
 
-    res.json({ token });
+    res.json({ token, usercargo });
 
   } catch (error) {
     console.error('Login error:', error); // Log detalhado do erro
