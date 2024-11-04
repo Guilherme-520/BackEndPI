@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
         // Define o diretório com base no campo do arquivo (logo ou arquivos)
         if (file.fieldname === 'logo') {
             cb(null, eventDirLogo);
-        } else if (file.fieldname === 'ModeloArquivos' || file.fieldname === 'ModeloApresentacao') {
+        } else if (file.fieldname === 'modeloApresentacao' || file.fieldname === 'modeloArquivos') {
             cb(null, eventDirArquivos);
         } else {
             cb(new Error('Campo de arquivo desconhecido'));
@@ -105,7 +105,7 @@ router.post('/:nomeURL', upload.fields([{ name: 'logo' }]), async (req, res) => 
         }
 
         // Associação dos Apoiadores ao evento
-        for (let index = 0; i < apoaId.length; i++) {
+        for (let index = 0; index < apoaId.length; index++) {
             await EventApoiadores.create({
                 idApoiadores: apoaId[index],
                 idEventos: event.id
@@ -229,8 +229,8 @@ router.post('/:nomeURL/hibrido', async(req, res)=>{
 });
 
 router.post('/:nomeURL/arquivos', upload.fields([
-    { name: 'ModeloArquivos' },
-    { name: 'ModeloApresentacao' }
+    { name: 'modeloApresentacao' },
+    { name: 'modeloArquivos' }
 ]), async (req, res) => {
     try {
         const event = await Eventos.findOne({ where: { nomeURL: req.params.nomeURL } });
@@ -245,9 +245,9 @@ router.post('/:nomeURL/arquivos', upload.fields([
             inicioAvaliacao: req.body.inicioAvaliacao,
             FinalAvaliacao: req.body.FinalAvaliacao,
             limiteArquivosAutores: req.body.limiteArquivosAutores,
-            limitesAutores: req.body.limitesAutores,
+            limiteAutores: req.body.limiteAutores,
             limiteAvaliadores: req.body.limiteAvaliadores,
-            modeloApresentacao: req.files.ModeloApresentacao ? req.files.ModeloApresentacao[0].path : null
+            modeloApresentacao: req.files.modeloApresentacao ? req.files.modeloApresentacao[0].path : null
         };
 
         await Eventos.update(dataEvent, { where: { id: event.id } });
@@ -259,7 +259,7 @@ router.post('/:nomeURL/arquivos', upload.fields([
             apresentacao: req.body.apresentacao,
             idEventos: event.id,
             idCategoriaArquivos: req.body.idCategoriaArquivos,
-            modeloArquivo: req.files.ModeloArquivos ? req.files.ModeloArquivos[0].path : null,
+            modeloArquivo: req.files.modeloArquivos ? req.files.modeloArquivos[0].path : null,
         };
 
         await Arquivos.create(dataArquivos);

@@ -79,7 +79,7 @@ router.post("/validar/admin", async (req, res) => {
     try {
       // Buscar o usuário com o ID recebido
       const user = await UserProfile.findOne({ where: { id: userID } });
-      const admin = await Admin.findOne({ where: { id: userID } });
+      const admin = await Admin.findOne({ where: { idUserProfiles: userID } });
   
       // Verifica se o usuário foi encontrado
       if (!user) {
@@ -108,7 +108,7 @@ router.post("/validar/admin", async (req, res) => {
     try {
       // Buscar o usuário com o ID recebido
       const user = await UserProfile.findOne({ where: { id: userID } });
-      const editorchefe = await EditorChefes.findOne({ where: { id: userID } });
+      const editorchefe = await EditorChefes.findOne({ where: { idUserProfiles: userID } });
   
       // Verifica se o usuário foi encontrado
       if (!user) {
@@ -139,7 +139,7 @@ router.post("/validar/admin", async (req, res) => {
     try {
       // Buscar o usuário com o ID recebido
       const user = await UserProfile.findOne({ where: { id: userID } });
-      const avaliador = await Avaliadores.findOne({ where: { id: userID } });
+      const avaliador = await Avaliadores.findOne({ where: { idUserProfiles: userID } });
   
       // Verifica se o usuário foi encontrado
       if (!user) {
