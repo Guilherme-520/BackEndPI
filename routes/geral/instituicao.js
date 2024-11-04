@@ -3,7 +3,7 @@ const {Instituicoes} = require("../../model/db");
 const { where } = require('sequelize');
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/cadastrar", async (req, res) => {
     const {nome, cnpj} = req.body 
 
     try {
@@ -24,6 +24,29 @@ router.post("/", async (req, res) => {
     }
   });
 
+  router.get("/filtro", async (req, res) => {
+    const { nome } = req.body; // Usar req.query para dados em GET
+
+    try {
+        // Buscar instituição com nome exatamente igual ao informado
+        const instituicoes = await Instituicoes.findAll({
+            where: {
+                nome: nome
+            }
+        });
+
+        // Verificar se nenhuma instituição foi encontrada
+        if (instituicoes.length === 0) {
+            return res.status(404).json({ message: 'Instituição não encontrada.' });
+        }
+
+        // Retornar instituições encontradas
+        res.status(200).json(instituicoes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Ocorreu um erro ao buscar as instituições.' });
+    }
+});
 
   module.exports = router
   
