@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { TokenEventos, UserEvento } = require('../../model/db');
+const { TokenEventos, UserEvento, Cargo } = require('../../model/db');
 
 const middlewareEvento = (allowedRoles) => {
   return async (req, res, next) => {
@@ -12,49 +12,56 @@ const middlewareEvento = (allowedRoles) => {
     const token = authHeader.replace('Bearer ', '');
 
     try {
+      // Decodificar o token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
-      console.log("PASSOU AQUI");
-      console.log(req.user);
 
+      console.log('Token decoded:', req.user);
 
-      // Busca o token mais recente no TokenEventos
+      // Buscar o token mais recente no banco de dados
       const tokenDoc = await TokenEventos.findOne({
         where: { idUserProfile: req.user.idUserProfile },
-        order: [['expiresAt', 'DESC']], // Ordena pela data de expiração, do mais recente para o mais antigo
+        order: [['expiresAt', 'DESC']], // Ordenar pela data de expiração
       });
 
-      // Verifica se o token existe e se está expirado
+      // Verificar se o token é válido ou expirou
       if (!tokenDoc || new Date() > tokenDoc.expiresAt) {
         return res.status(401).json({ message: 'Access denied. Token expired or invalid.' });
       }
 
-      // Verifica se o evento foi fornecido na URL
+      // Buscar os registros de UserEvento associados ao usuário
       const userEventos = await UserEvento.findAll({
         where: {
           idUserProfile: req.user.idUserProfile,
-          // Se precisar, pode adicionar filtro por nomeURL aqui
-        }
+        },
+        include: {
+          model: Cargo, // Incluir os cargos associados
+          through: { attributes: [] }, // Excluir dados da tabela intermediária
+        },
       });
 
       if (!userEventos || userEventos.length === 0) {
         return res.status(403).json({ message: 'Access denied. User not associated with any event.' });
       }
 
-      // Extrai os cargos do usuário associados aos eventos
-      const userRoles = userEventos.flatMap(evento => JSON.parse(evento.cargos)); // Caso 'cargos' esteja em formato JSON
+      // Extrair os cargos associados
+      const userRoles = userEventos.flatMap(evento => 
+        evento.Cargos.map(cargo => cargo.cargo)
+      );
 
-      // Verifica se o usuário tem pelo menos uma das roles permitidas
-      const hasAccess = userRoles.some(cargo => allowedRoles.includes(cargo));
+      console.log('User roles:', userRoles);
+
+      // Verificar se o usuário tem pelo menos uma das roles permitidas
+      const hasAccess = userRoles.some(role => allowedRoles.includes(role));
 
       if (!hasAccess) {
         return res.status(403).json({ message: 'Access denied. Insufficient privileges.' });
       }
 
-      next();
-    } catch (ex) {
-      console.error('Token verification error:', ex); // Loga o erro
-      res.status(400).json({ message: 'Invalid token.', error: ex.message });
+      next(); // Continuar para a próxima middleware ou rota
+    } catch (error) {
+      console.error('Token verification error:', error);
+      res.status(400).json({ message: 'Invalid token.', error: error.message });
     }
   };
 };

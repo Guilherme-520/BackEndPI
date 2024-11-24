@@ -25,17 +25,15 @@ router.post("/cadastrar", async (req, res) => {
   });
 
   router.get("/filtro", async (req, res) => {
-    const { nome } = req.body; // Usar req.query para dados em GET
+    const { nome } = req.body;
 
     try {
-        // Buscar instituição com nome exatamente igual ao informado
-        const instituicoes = await Instituicoes.findAll({
-            where: {
-                nome: nome
+        const instituicoes = await Instituicoes.findAll({ 
+            where: { 
+                status:`Aprovado`  // Use Op.iLike corretamente
             }
         });
 
-        // Verificar se nenhuma instituição foi encontrada
         if (instituicoes.length === 0) {
             return res.status(404).json({ message: 'Instituição não encontrada.' });
         }
@@ -47,6 +45,7 @@ router.post("/cadastrar", async (req, res) => {
         res.status(500).json({ message: 'Ocorreu um erro ao buscar as instituições.' });
     }
 });
+
 
   module.exports = router
   

@@ -138,6 +138,47 @@ const Eventos = sequelize.define('Eventos', {
   modeloApresentacao: { type: DataTypes.STRING, allowNull: true}
 });
 
+const UserEvento = sequelize.define('UserEvento', {
+  idUserProfile: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: UserProfile,
+      key: 'id'
+    },
+    allowNull: false
+  },
+  idEvento: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Eventos,
+      key: 'id'
+    },
+    allowNull: false
+  }
+}, {
+  timestamps: true
+});
+
+
+const EventoUserCargo = sequelize.define('EventoUserCargo', {
+  idUserEvento: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: UserEvento,
+      key: 'id'
+    }
+  }, //oia, aqui você tá fazendo as relaçoes por FK; se fala qual o id q tá relacionando e e depois suas propriedades, além do model q você tá chamando
+  idCargo: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Cargo,
+      key: 'id'
+    }
+  }
+}, {
+  timestamps: false
+});
+
 
 const Ouvintes = sequelize.define('Ouvintes', {
   idUserProfiles: {
@@ -430,7 +471,7 @@ const ArquivoSubmetidos = sequelize.define('ArquivoSubmetidos', {
 
   titulo:  { type: DataTypes.STRING, allowNull: false },
   resumo:  { type: DataTypes.STRING, allowNull: true },
-  bastract:  { type: DataTypes.STRING, allowNull: true },
+  abstract:  { type: DataTypes.STRING, allowNull: true },
   palavrasChaves:  { type: DataTypes.STRING, allowNull: true },
   keyWords:  { type: DataTypes.STRING, allowNull: true },
   arquivoCompleto:  { type: DataTypes.STRING, allowNull: true },
@@ -568,30 +609,6 @@ const CertificadosAvaliadores = sequelize.define("CertificadosAvaliadores", {
 });
 
 
-const UserEvento = sequelize.define('UserEvento', {
-  idUserProfile: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: UserProfile,
-      key: 'id'
-    },
-    allowNull: false
-  },
-  idEvento: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: Eventos,
-      key: 'id'
-    },
-    allowNull: false
-  },
-  cargos: {
-    type: DataTypes.STRING,
-    allowNull: false
-  }
-}, {
-  timestamps: true
-});
 
   const TokenEventos = sequelize.define('TokenEventos', {
     token: {
@@ -627,8 +644,8 @@ Cargo.belongsToMany(UserProfile, { through: UserCargo, foreignKey: 'idCargo' });
 Eventos.hasMany(UserEvento, { foreignKey: 'idEvento' });
 UserEvento.belongsTo(Eventos, { foreignKey: 'idEvento' });
 
-UserEvento.belongsTo(Cargo, { foreignKey: 'cargos', targetKey: 'cargo' });
-Cargo.hasMany(UserEvento, { foreignKey: 'cargos' });
+UserEvento.belongsToMany(Cargo, { through: EventoUserCargo, foreignKey: 'idUserEvento' });
+Cargo.belongsToMany(UserEvento, { through: EventoUserCargo, foreignKey: 'idCargo' });
 
 Admin.belongsTo(UserProfile, { foreignKey: 'idUserProfiles' });  // Admin pertence a um UserProfile
 UserProfile.hasOne(Admin, { foreignKey: 'idUserProfiles' });  // Um UserProfile tem um Admin
@@ -646,4 +663,4 @@ Eventos.belongsTo(Admin, {
 sequelize.sync();
 
 // Não esqueçam
-module.exports = {Admin, CertificadosAvaliadores,UserEvento, TokenEventos,  EventoAvaliadores, RespostasAvaliacoes, ArquivoEspecialidades, AutorArquivos, ArquivoSubmetidos, Avaliacoes, UserProfile, Cargo, Token, UserCargo, Instituicoes, EditorChefes, Eventos, Ouvintes, Areas, SubAreas, GrandeAreas, AvaliadorSubAreas, Especialidades, CorpoEditoriais, CorpoEditorialEventos, Apoiadores, EventApoiadores, Onlines, Presenciais, CategoriaArquivos, Arquivos, Convidados, Autores, Organizadores, Chairs , Avaliadores, sequelize };
+module.exports = {Admin, CertificadosAvaliadores,UserEvento,EventoUserCargo, TokenEventos,  EventoAvaliadores, RespostasAvaliacoes, ArquivoEspecialidades, AutorArquivos, ArquivoSubmetidos, Avaliacoes, UserProfile, Cargo, Token, UserCargo, Instituicoes, EditorChefes, Eventos, Ouvintes, Areas, SubAreas, GrandeAreas, AvaliadorSubAreas, Especialidades, CorpoEditoriais, CorpoEditorialEventos, Apoiadores, EventApoiadores, Onlines, Presenciais, CategoriaArquivos, Arquivos, Convidados, Autores, Organizadores, Chairs , Avaliadores, sequelize };
