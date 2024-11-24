@@ -6,6 +6,67 @@ const { TokenEventos, Cargo, UserEvento, Eventos, Avaliadores, AvaliadorSubAreas
 
 const router = express.Router();
 
+router.post('/register/Admin/:nomeURL', async (req, res) => {
+  const { nomeURL } = req.params;
+  const cargos = req.body.cargos;
+
+if ( req.user.cargo == "Admin") {
+  if (!Array.isArray(cargos) || cargos.length === 0) {
+    return res.status(400).json({ message: 'Cargos must be a non-empty array' });
+  }
+
+  const validCargo = ['Admin'];
+  const invalidCargo = cargos.filter(cargo => !validCargo.includes(cargo));
+  if (invalidCargo.length > 0) {
+    return res.status(400).json({ message: `Invalid cargo: ${invalidCargo.join(', ')}` });
+  }
+
+  try {
+    // Buscar o evento pelo nomeURL
+    const evento = await Eventos.findOne({ where: { nomeURL } });
+    if (!evento) {
+      return res.status(404).json({ message: 'Evento not found' });
+    }
+
+    // Encontrar ou criar o registro de UserEvento
+    const [userEvento] = await UserEvento.findOrCreate({
+      where: {
+        idUserProfile: req.user.id,
+        idEvento: evento.id
+      }
+    });
+
+    // Buscar cargos existentes associados ao UserEvento
+    const existingCargos = await userEvento.getCargos();
+    const existingCargoNames = existingCargos.map(cargo => cargo.cargo);
+
+    // Filtrar cargos que já estão associados
+    const newCargos = cargos.filter(cargo => !existingCargoNames.includes(cargo));
+
+    if (newCargos.length === 0) {
+      return res.status(200).json({ message: 'No new cargos to add' });
+    }
+
+    // Mapear cargos novos para IDs
+    const cargoRecords = await Cargo.findAll({ where: { cargo: { [Op.in]: newCargos } } });
+    if (cargoRecords.length !== newCargos.length) {
+      return res.status(400).json({ message: 'Some cargos do not exist in the database' });
+    }
+
+    // Associar os novos cargos ao UserEvento
+    await userEvento.addCargos(cargoRecords);
+
+    res.status(201).json({ message: 'User successfully registered for the event with new roles' });
+  } catch (error) {
+    console.error('Error registering user for event:', error);
+    res.status(500).json({ message: 'Error registering user for event', error: error.message });
+  }
+}else{
+  res.status(403).json({ message: 'Usuário não possui permissão para fazer este cadastro' });
+}
+});
+
+
 // Registro de cargos para um evento
 router.post('/register/EditorChefe/:nomeURL', async (req, res) => {
   const { nomeURL } = req.params;
