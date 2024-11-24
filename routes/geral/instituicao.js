@@ -16,7 +16,7 @@ router.post("/cadastrar", async (req, res) => {
       const status = "Pendente"
       const instituicao = await Instituicoes.create({nome, cnpj, status})
 
-      res.status(200).json(instituicao)
+      res.status(200).json("A intituição cadastrada ainda deve ser aprovada ", instituicao)
 
     } catch (error) {
       console.error(error);
